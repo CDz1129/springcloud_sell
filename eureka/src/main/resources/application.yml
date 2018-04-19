@@ -1,0 +1,25 @@
+
+eureka:
+  client:
+    service-url:
+#  1台注册中心时,需要自己将自己注册到注册中心上
+#    多台注册中心,需要将将其注册到其他除了自己的所有机器上,这样就可以实现 服务 同步,与注册中心的高可用
+      defaultZone: http://localhost:8761/eureka/
+#    屏蔽自己机器的注册中心 展示
+    register-with-eureka: false
+  server:
+#    关闭自我保护机制
+#     eureka的自我保护机制:
+#        eureka与服务之间用心跳机制连接,当一个服务长时间没有反馈(默认90s),此时eureka就会注销这个服务.
+#        但是,当出现网络分区故障时,会导致大部分的服务不能响应心跳,而其实是可用服务,这时将他们全部注销掉就会使大部分的可用服务停掉,这是不应该的.
+#        为了避免这个状态,eureka又一个"自我保护机制".
+#
+#        自我保护机制 是当eureka同时失去过多服务时,进入保护模式,这时会保护所有服务信息,不再删除服务注册表中信息(也不能注销).当网络恢复后,自动关闭保护模式
+    enable-self-preservation: false
+spring:
+  application:
+#    设置在 eureka上服务的名字
+    name: eureka
+#设置端口号
+server:
+  port: 8761
