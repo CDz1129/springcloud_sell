@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.util.Date;
 
 /**
  * @author chendezhi
@@ -13,5 +14,11 @@ import javax.persistence.Id;
 @Entity
 public class UserInfo {
     @Id
-    private
+    private String id;
+    private String username;
+    private String password;
+    private String openid;
+    private byte role;
+    private Date createTime;
+    private Date updateTime;
 }
