@@ -13,7 +13,7 @@ import java.util.Date;
  */
 @Data
 @Entity
-public class ProductInfo {
+public class ProductInfo{
     @Id
     private String productId;
 
