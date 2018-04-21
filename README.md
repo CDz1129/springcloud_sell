@@ -25,5 +25,7 @@ eureka:服务注册中心
 
 ### 使用到的组件:
 - RestTemplate:spring提供的restFul请求接口(用到LoadBalancer(ribbon)来实现客户端的 软负载均衡)
-- Feign
+- Feign(本质http客户端)
+    - 声明式REST客户端，伪RPC
+    - 采用基于`接口加注解`的形式
 - Zuul

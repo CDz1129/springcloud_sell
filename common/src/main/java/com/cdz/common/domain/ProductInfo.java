@@ -1,6 +1,7 @@
 package com.cdz.common.domain;
 
 import lombok.Data;
+import lombok.Getter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -41,4 +42,8 @@ public class ProductInfo{
     private Date createTime;
 
     private Date updateTime;
+
+
+
+
 }

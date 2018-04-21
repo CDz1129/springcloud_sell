@@ -7,11 +7,13 @@ import com.cdz.common.urlparam.OrderFrom;
 import com.cdz.common.utils.ReslutUtil;
 import com.cdz.common.vo.ResultVo;
 import com.cdz.orderservice.service.OrderService;
+import com.cdz.productclient.ProductClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -65,6 +67,17 @@ public class OrderController {
 
         orderDTO.setOrderDetails(orderDetails);
         return orderDTO;
+    }
+
+    @Autowired
+    private ProductClient productClient;
+
+    @GetMapping("msg")
+    public String getProductMsg(){
+        String productMsg = productClient.getProductMsg();
+
+        log.info("product的msg::::{}",productMsg);
+        return productMsg;
     }
 
 }

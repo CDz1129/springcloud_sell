@@ -1,5 +1,7 @@
 package com.cdz.common.utils;
 
+import com.cdz.common.dto.OrderDTO;
+
 import java.util.Random;
 
 /**
