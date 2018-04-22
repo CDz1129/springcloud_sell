@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: config
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://gitlab.com/CDz1129/config.git
+          username: 469176834@qq.com
+          password: wcnm1314
+          basedir: E:\Workspaces\springcloud_sell\config\basedir
+  rabbitmq:
+    host: 119.23.247.21
+    username: cdz@rabbit
+    password: cdz@469176834
+    port: 5672
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
