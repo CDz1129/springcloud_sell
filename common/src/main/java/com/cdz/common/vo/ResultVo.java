@@ -21,9 +21,11 @@ public class ResultVo<T> {
         this.code = code;
     }
 
-    public ResultVo(String msg, int code) {
-        this.msg = msg;
-        this.code = code;
+
+
+    public ResultVo(ReslutEnum reslutEnum) {
+        this.msg = reslutEnum.getMsg();
+        this.code = reslutEnum.getCode();
     }
 
     public ResultVo(String msg, T data, int code) {
@@ -37,6 +39,8 @@ public class ResultVo<T> {
         this.msg = reslutEnum.getMsg();
         this.data = data;
     }
+
+
 
     public ResultVo() {
     }

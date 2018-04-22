@@ -1,6 +1,8 @@
 package com.cdz.common.urlparam;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
@@ -31,6 +33,9 @@ public class OrderFrom {
     @NotEmpty(message = "地址不能为空")
     private String address;
 
+    @NotEmpty(message = "openid不能为空")
+    private String openid;
+
     /**
      * 购物项
      */
@@ -38,6 +43,8 @@ public class OrderFrom {
     private List<OrderItem> items;
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class OrderItem {
 
         /**
@@ -49,6 +56,8 @@ public class OrderFrom {
          * 商品数量
          */
         private int productQuantity;
+
+
     }
 
 }

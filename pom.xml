@@ -15,6 +15,7 @@
         <module>order</module>
         <module>product</module>
         <module>common</module>
+        <module>config</module>
     </modules>
     <name>wechatstore</name>
     <description>Demo project for Spring Boot</description>

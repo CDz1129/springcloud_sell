@@ -14,6 +14,7 @@
 	<modules>
 		<module>productclient</module>
 		<module>productservice</module>
+		<module>product-common</module>
 	</modules>
 	<packaging>pom</packaging>
 

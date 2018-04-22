@@ -1,6 +1,7 @@
 package com.cdz.productservice.controller;
 
-import com.cdz.common.utils.ReslutUtil;
+import com.cdz.common.urlparam.OrderFrom;
+import com.cdz.common.utils.ResultUtil;
 import com.cdz.common.vo.ProductItemVo;
 import com.cdz.common.vo.ProductVo;
 import com.cdz.common.vo.ResultVo;
@@ -10,9 +11,7 @@ import com.cdz.productservice.service.ProductCategoryService;
 import com.cdz.productservice.service.ProductInfoService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -38,6 +37,31 @@ public class ProductController {
         BeanUtils.copyProperties(productInfo, productItemVo);
         return productItemVo;
     }
+
+    /**
+     * 通过productid list来获取对应的所有product详情
+     *  提供外部服务
+     * @param productIds
+     * @return
+     */
+    @PostMapping("/productIds")
+    public List<ProductInfo> findByProductIdList(@RequestBody List<String> productIds){
+        List<ProductInfo> products = productInfoService.findByProductIdIn(productIds);
+        return products;
+    }
+
+
+    /**
+     * 扣库存
+     *  提供外部服务
+     * @param orderItems
+     */
+    @PostMapping("/decreaseStock")
+    public void decreaseStock(@RequestBody List<OrderFrom.OrderItem> orderItems){
+
+        productInfoService.decreaseStock(orderItems);
+    }
+
 
     @GetMapping("")
     public ResultVo findAll() {
@@ -72,6 +96,6 @@ public class ProductController {
         }).filter(Objects::nonNull)
           .collect(Collectors.toList());
 
-        return ReslutUtil.success(productVos);
+        return ResultUtil.success(productVos);
     }
 }

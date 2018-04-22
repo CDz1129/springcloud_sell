@@ -4,18 +4,20 @@ import com.cdz.common.domain.OrderDetail;
 import com.cdz.common.domain.OrderMaster;
 import com.cdz.common.dto.OrderDTO;
 import com.cdz.common.urlparam.OrderFrom;
-import com.cdz.common.utils.ReslutUtil;
+import com.cdz.common.utils.ResultUtil;
 import com.cdz.common.vo.ResultVo;
 import com.cdz.orderservice.service.OrderService;
-import com.cdz.productclient.ProductClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,9 +27,11 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @RestController
+@RequestMapping("order")
 public class OrderController {
     @Autowired
     private OrderService orderService;
+
 
     private static OrderDetail orderItem2OrderDetail(OrderFrom.OrderItem item) {
         OrderDetail orderDetail = new OrderDetail();
@@ -35,19 +39,19 @@ public class OrderController {
         return orderDetail;
     }
 
-    public ResultVo create(@Validated OrderFrom orderFrom, BindingResult result) {
+    @PostMapping("/create")
+    public ResultVo create(@RequestBody @Validated OrderFrom orderFrom, BindingResult result) {
 
         //参数校验
-        if (result.hasErrors()){
-            return ReslutUtil.error(result.getFieldError().getDefaultMessage());
+        if (result.hasErrors()) {
+            return ResultUtil.error(result.getFieldError().getDefaultMessage());
         }
         OrderDTO orderDTO = orderFrom2OrderDTO(orderFrom);
-
         OrderDTO resultOrderDto = orderService.createOrder(orderDTO);
 
-
-
-        return null;
+        HashMap<String, String> resultMap = new HashMap<>();
+        resultMap.put("orderId",resultOrderDto.getOrderMaster().getOrderId());
+        return ResultUtil.success(resultMap);
     }
 
     private OrderDTO orderFrom2OrderDTO(OrderFrom orderFrom) {
@@ -58,6 +62,7 @@ public class OrderController {
         orderMaster.setBuyerAddress(orderFrom.getAddress());
         orderMaster.setBuyerName(orderFrom.getName());
         orderMaster.setBuyerPhone(orderFrom.getPhone());
+        orderMaster.setBuyerOpenid(orderFrom.getOpenid());
 
         List<OrderFrom.OrderItem> items = orderFrom.getItems();
 
@@ -66,18 +71,9 @@ public class OrderController {
                 .collect(Collectors.toList());
 
         orderDTO.setOrderDetails(orderDetails);
+        orderDTO.setOrderMaster(orderMaster);
         return orderDTO;
     }
 
-    @Autowired
-    private ProductClient productClient;
-
-    @GetMapping("msg")
-    public String getProductMsg(){
-        String productMsg = productClient.getProductMsg();
-
-        log.info("product的msg::::{}",productMsg);
-        return productMsg;
-    }
 
 }

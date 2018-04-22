@@ -9,8 +9,8 @@ import lombok.Getter;
 @Getter
 public enum  ReslutEnum {
     SUCCESS(0,"成功"),
-    ERROR(500,"错误")
-            ;
+    ERROR(500,"错误"),
+    ORDERCAR_EMPTY_ERROR(500,"购物车为空")        ;
 
     private int code;
 
