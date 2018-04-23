@@ -5,7 +5,13 @@ eureka:
 spring:
   application:
     name: product
-  datasource:
-    url: jdbc:mysql://119.23.247.21:3306/springcloud_sell?useUnicode=true&characterEncoding=utf-8
-    username: root
-    password: Cdz@mysql_469176834
+#  datasource:
+#    url: jdbc:mysql://119.23.247.21:3306/springcloud_sell?useUnicode=true&characterEncoding=utf-8
+#    username: root
+#    password: Cdz@mysql_469176834
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: CONFIG
+      profile: dev
