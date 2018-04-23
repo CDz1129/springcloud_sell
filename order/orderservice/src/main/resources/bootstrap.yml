@@ -16,15 +16,5 @@ spring:
         enabled: true
         service-id: CONFIG
       profile: dev
-  rabbitmq:
-    host: 119.23.247.21
-    username: cdz@rabbit
-    password: cdz@469176834
-    port: 5672
   application:
     name: order
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"

@@ -78,7 +78,11 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
-
+        <!--引入springboot操作rabbitMQ-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
