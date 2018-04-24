@@ -110,9 +110,54 @@ spring:
 ## 消息总线（spring cloud bus）
 上面做到了，配置的集中化管理，但是其中如果想要实现，配置的实时更新还是不行的。
 
-# zuul网关服务
+# 服务网关
 为什么要使用服务网关：如果有多个服务，那么客户端如何去调用这些服务？一个一个服务去打交道，这是一个非常不现实的。
 
 需要一个角色来充当request的同一入口，zuul在spring cloud 中就充当这一角色。
 
- 
+## 服务网管的要素
+- 稳定性,高可用
+- 性能,并发性
+- 安全性
+- 扩展性
+
+## 常用的网关方案
+- Nginx+Lua
+- Kong(商业软件)
+- Tyk(开源go语言发开)
+- spring cloud zuul（天生适合微服务，主要Java微服务使用spring cloud 作为网关的不二选择，但是性能上没有nginx强大）
+    - 一般解决方案 Nginx+zuul，使用Nginx作为第一层的负载均衡到各个zuul网关服务上，通过zuul的发挥自身优势
+
+### spring cloud zuul
+zuul特点 
+- **路由+过滤器=zuul**
+- 核心是一系列的过滤器
+
+#### zuul的四种过滤器API
+- 前置（pre）
+- 路由（route）
+- 后置（post）
+- 错误（error）
+
+其中每一类的过滤器是不会通信的，通过RequestContext（请求上下文）做到数据的传递。
+
+yml设置：
+```yaml
+zuul:
+  routes:
+    myProduct:
+      serviceId: product
+      path: /myProduct/**
+#     cookie的传递 将敏感头设置为null
+      sensitiveHeaders:
+#    简单配置 自定义访问url
+#    product: /myProduct/**
+#设置不允许一些接口暴露外部，只服务间调用，参数是set集合
+#此为 正则方式匹配
+  ignored-patterns: 
+    - **/product
+```
+这里发现一个坑，其网关默认请求接口过期时间是1s，只要一个接口超过1秒，就会直接返回错误。
+
+
+而其底层使用的是，ribbon来实现的HTTP restFul请求。所以问题在于ribbon当一个接口时间超过1s就会报错。

@@ -64,7 +64,7 @@ public class ProductController {
 
 
     @GetMapping("")
-    public ResultVo findAll() {
+    public ResultVo findAll() throws InterruptedException {
 
         //查询所有的 商品信息
 
@@ -96,6 +96,7 @@ public class ProductController {
         }).filter(Objects::nonNull)
           .collect(Collectors.toList());
 
+//        Thread.sleep(600);
         return ResultUtil.success(productVos);
     }
 }

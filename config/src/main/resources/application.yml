@@ -5,10 +5,10 @@ spring:
     config:
       server:
         git:
-          uri: https://gitlab.com/CDz1129/config.git
-          username: 469176834@qq.com
+          uri: https://gitee.com/cdz163/config.git
+          username: smartcdz@163.com
           password: wcnm1314
-          basedir: E:\Workspaces\springcloud_sell\config\basedir
+#          basedir: E:\Workspaces\springcloud_sell\config\basedir 指定config本地目录
   rabbitmq:
     host: 119.23.247.21
     username: cdz@rabbit
