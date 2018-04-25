@@ -5,6 +5,7 @@ import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -15,6 +16,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * @author chendezhi
  * @date 2018/4/24 18:00
  */
+@Component
 public class TokenFilter extends ZuulFilter {
     @Override
     public String filterType() {

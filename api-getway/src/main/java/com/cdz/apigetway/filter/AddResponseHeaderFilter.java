@@ -3,6 +3,7 @@ package com.cdz.apigetway.filter;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -15,6 +16,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * @author chendezhi
  * @date 2018/4/25 9:39
  */
+@Component
 public class AddResponseHeaderFilter extends ZuulFilter{
 
     @Override

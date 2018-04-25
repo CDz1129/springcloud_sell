@@ -161,3 +161,154 @@ zuul:
 
 
 而其底层使用的是，ribbon来实现的HTTP restFul请求。所以问题在于ribbon当一个接口时间超过1s就会报错。
+
+#### zuul过滤器编写
+需要继承`ZuulFilter`,实现其中方法
+```java
+@Component
+public class TokenFilter extends ZuulFilter {
+    @Override
+    public String filterType() {
+        //常量在 FilterConstants 下寻找
+        return POST_TYPE;
+    }
+
+    /**
+    * 过滤器执行循序
+    * 值越小 优先级越高
+    * 
+    * 在FilterConstants有定义顺序常量.
+    */
+    @Override
+    public int filterOrder() {
+        //常量在 FilterConstants 下寻找
+        return SERVLET_DETECTION_FILTER_ORDER - 1;
+    }
+
+    /**
+    *
+    *是否使用常量
+    */
+    @Override
+    public boolean shouldFilter() {
+        return true;
+    }
+
+    /**
+    *   具体
+    *
+    */   
+    @Override
+    public Object run() throws ZuulException {
+
+
+        RequestContext currentContext = RequestContext.getCurrentContext();
+
+        HttpServletRequest request = currentContext.getRequest();
+
+        String token = request.getParameter("token");
+        if (StringUtils.isEmpty(token)){
+            currentContext.setSendZuulResponse(false);
+            currentContext.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
+        }
+        return null;
+    }
+}
+```
+
+在过滤器中可以实现,鉴权与限流的操作.
+
+# 熔断器(spring cloud hystrix)
+- 服务降级
+    - 优先核心服务,非核心服务不可用或弱可用
+    - 通过 HystrixCommand注解指定
+    - fallbackMethod(回退函数)中具体实现降级逻辑
+- 服务熔断
+- 依赖隔离
+- 监控(hystrix dashboard)
+
+## 使用
+加入依赖
+```xml
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+    </dependency>
+``` 
+在启动类上加入注解`@EnableCircuitBreaker`
+
+其实也可以直接使用 `@SpringCloudApplication`相当于
+```java
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@SpringBootApplication //springboot启动类注解
+@EnableDiscoveryClient//eureka客户端注解
+@EnableCircuitBreaker//hystrix启用注解
+public @interface SpringCloudApplication {
+}
+```
+
+### 接口熔断
+
+在调用接口方法上加入`@HystrixCommand`其参数很多,如果想实现降级加入参数`fallbackMethod = "fallback"`
+```java
+    @RestController
+    public class HystixController {
+    
+        /**
+         * 使用 RestTemplate 实现调用服务接口
+         * @return
+         */
+    
+        @GetMapping("/getProductInfoList")
+        @HystrixCommand(fallbackMethod = "fallback")
+        public String getProductInfoList(){
+            RestTemplate restTemplate = new RestTemplate();
+            return restTemplate.getForObject("http://localhost:8080/product", String.class);
+        }
+    
+        private String fallback(){
+            return "太拥挤了,请稍后再试.....";
+        }
+    }
+```
+
+从开始实验中发现其实是因为,restTemplate调用请求时,抛出了异常才使得其进入`fallback`降级方法.
+
+故测试,是否方法中,直接抛出异常是否会返回`太拥挤了,请稍后再试.....`,事实是可以的,说明其实hytrix不只可以降级服务.同样也可以降级自己的服务
+
+若想要将一个类中所有的服务,统一处理降级逻辑在类上
+全部参数解释:
+```java
+        public @interface HystrixCommand {
+
+            // HystrixCommand 命令所属的组的名称：默认注解方法类的名称
+            String groupKey() default "";
+
+            // HystrixCommand 命令的key值，默认值为注解方法的名称
+            String commandKey() default "";
+
+            // 线程池名称，默认定义为groupKey
+            String threadPoolKey() default "";
+            // 定义回退方法的名称, 此方法必须和hystrix的执行方法在相同类中
+            String fallbackMethod() default "";
+            // 配置hystrix命令的参数
+            HystrixProperty[] commandProperties() default {};
+            // 配置hystrix依赖的线程池的参数
+             HystrixProperty[] threadPoolProperties() default {};
+
+            // 如果hystrix方法抛出的异常包括RUNTIME_EXCEPTION，则会被封装HystrixRuntimeException异常。我们也可以通过此方法定义哪些需要忽略的异常
+            Class<? extends Throwable>[] ignoreExceptions() default {};
+
+            // 定义执行hystrix observable的命令的模式，类型详细见ObservableExecutionMode
+            ObservableExecutionMode observableExecutionMode() default ObservableExecutionMode.EAGER;
+
+            // 如果hystrix方法抛出的异常包括RUNTIME_EXCEPTION，则会被封装HystrixRuntimeException异常。此方法定义需要抛出的异常
+            HystrixException[] raiseHystrixExceptions() default {};
+
+            // 定义回调方法：但是defaultFallback不能传入参数，返回参数和hystrix的命令兼容
+            String defaultFallback() default "";
+        }
+```
