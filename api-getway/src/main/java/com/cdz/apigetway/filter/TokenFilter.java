@@ -1,7 +1,12 @@
 package com.cdz.apigetway.filter;
 
 import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.http.HttpStatus;
+
+import javax.servlet.http.HttpServletRequest;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVLET_DETECTION_FILTER_ORDER;
@@ -30,8 +35,15 @@ public class TokenFilter extends ZuulFilter {
     public Object run() throws ZuulException {
 
 
+        RequestContext currentContext = RequestContext.getCurrentContext();
 
+        HttpServletRequest request = currentContext.getRequest();
 
+        String token = request.getParameter("token");
+        if (StringUtils.isEmpty(token)){
+            currentContext.setSendZuulResponse(false);
+            currentContext.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
+        }
         return null;
     }
 }
