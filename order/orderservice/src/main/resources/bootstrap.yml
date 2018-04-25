@@ -18,3 +18,11 @@ spring:
       profile: dev
   application:
     name: order
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 2000
+

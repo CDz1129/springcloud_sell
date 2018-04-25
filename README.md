@@ -312,3 +312,22 @@ public @interface SpringCloudApplication {
             String defaultFallback() default "";
         }
 ```
+
+在之前`zuul`中遇到过的超时时间问题,在这里hystrix中同样也会有,情景是当调用接口超时时间太久同样会将其降级处理.
+
+设置超时时间方法,使用上述参数`commandProperties`,`commandProperties`的参数是一个list集合,集合中`@HystrixProperty`,参数所有的定义在
+`com.netflix.hystrix.HystrixCommandProperties`
+
+- HystrixCommandProperties涉及到超时的参数
+    - default_executionTimeoutInMilliseconds  -> execution.isolation.thread.timeoutInMilliseconds
+
+- HystrixCommandProperties涉及熔断配置
+    - circuitBreakerRequestVolumeThreshold -> circuitBreaker.enabled
+        - 滚动窗口中,断路器最小请求数
+    - circuitBreakerSleepWindowInMilliseconds -> circuitBreaker.requestVolumeThreshold
+        - 时间窗口,当触发熔断后,会有一个记时窗口,这里的值就是计时的时间,熔断后fallback会变成主逻辑,当休眠窗口到达设置的时间后,熔断到半开(half-open)状态,此时允许请求服务,如果请求成功,熔断结束.如果失败继续休眠,且重新及时.
+    - circuitBreakerEnabled -> circuitBreaker.sleepWindowInMilliseconds
+        - 是否开启熔断设置
+    - circuitBreakerErrorThresholdPercentage -> circuitBreaker.errorThresholdPercentage
+        - 断路器打开条件,是百分数.如设置为60,circuitBreakerRequestVolumeThreshold设置为10,那么就是当在滚动窗口中发生10次调用,10次中有7次发生异常,70%>60%就开启熔断
+

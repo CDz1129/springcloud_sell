@@ -2,6 +2,7 @@ package com.cdz.orderservice.controller;
 
 import com.netflix.hystrix.contrib.javanica.annotation.DefaultProperties;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -21,7 +22,10 @@ public class HystixController {
      */
 
     @GetMapping("/getProductInfoList")
-    @HystrixCommand()
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold",value = "2000"),//设置接口过期时间
+//            @HystrixProperty(name = "",value = "")
+    })
     public String getProductInfoList(){
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate.getForObject("http://localhost:8080/product", String.class);
