@@ -18,6 +18,12 @@ spring:
       profile: dev
   application:
     name: order
+  zipkin:
+    base-url: http://119.23.247.21:9411/
+  sleuth:
+    sampler:
+      probability: 1
+
 
 hystrix:
   command:
@@ -30,3 +36,14 @@ hystrix:
 feingn:
   hystrix:
     enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      base-path: /
+logging:
+  level:
+    org.springframework.cloud.openfeign: debug
+

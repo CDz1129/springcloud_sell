@@ -278,7 +278,7 @@ public @interface SpringCloudApplication {
 
 从开始实验中发现其实是因为,restTemplate调用请求时,抛出了异常才使得其进入`fallback`降级方法.
 
-故测试,是否方法中,直接抛出异常是否会返回`太拥挤了,请稍后再试.....`,事实是可以的,**说明其实hytrix不只可以降级服务.同样也可以降级自己的服务**
+故测试,是否方法中,直接抛出异常是否会返回`太拥挤了,请稍后再试.....`,事实是可以的,**说明其实hytsrix不只可以降级服务.同样也可以降级自己的服务**
 
 若想要将一个类中所有的服务,统一处理降级逻辑在类上
 全部参数解释:
@@ -365,3 +365,158 @@ hystrix:
             @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage",value = "60")//断路器打开的错误百分比条件
     })
 ```
+
+#### feign与hystrix整合
+第一步：
+
+需要在yml中配置：注意这里是没有提示的
+```
+feingn:
+  hystrix:
+    enabled: true
+```
+
+第二步：
+
+
+然后在client的`@FeignClient`注解上添加参数`@FeignClient(name = "product",fallback = ProductClient.ProductClientFallback.class)`
+
+且在`ProductClientFallback`类上加入`@Component`使其加载到Spring中。
+```
+
+@FeignClient(name = "product",fallback = ProductClient.ProductClientFallback.class)
+public interface ProductClient {
+
+    @PostMapping("/product/productIds")
+    List<ProductInfo> findByProductIdList(@RequestBody List<String> productIds);
+
+    @PostMapping("/product/decreaseStock")
+    void decreaseStock(@RequestBody List<OrderFrom.OrderItem> orderItems);
+
+    @Component
+    static class ProductClientFallback implements ProductClient{
+
+        @Override
+        public List<ProductInfo> findByProductIdList(List<String> productIds) {
+            return null;
+        }
+
+        @Override
+        public void decreaseStock(List<OrderFrom.OrderItem> orderItems) {
+
+        }
+    }
+}
+```
+
+第三步：
+
+在调用服务方的启动注解上加入扫描`@ComponentScan(basePackages = "com.cdz")`扩大范围，使其可以扫描到ProductClientFallback这个类。
+```
+@EnableFeignClients(basePackages = "com.cdz.productclient")//使用feign组件调用其它客户端接口
+@ComponentScan(basePackages = "com.cdz")
+@EntityScan(value = "com.cdz.common.domain")//springdata jpa bean的扫描路
+//@SpringBootApplication
+//@EnableDiscoveryClient//申明是eureka的客户端
+//@EnableCircuitBreaker
+@SpringCloudApplication
+public class OrderServiceApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(OrderServiceApplication.class, args);
+  }
+}
+
+```
+
+###  hystrix-dashboard 断路器可视化
+加入依赖：
+```
+      <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-hystrix-dashboard</artifactId>
+        </dependency>
+<!--
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-netflix-archaius</artifactId>
+        </dependency>-->
+```
+
+在启动类上加入注解：`@EnableHystrixDashboard`
+
+在页面上输入项目 `host:port/hystrix`。进入后并不能找到，原因是Springcloud2.0的一个坑，其访问的是` http://localhost:8081/hystrix.stream?delay=2000`但是Springcloud2.0改为了`application/hystrix.stream`,所以要加入yml配置。
+
+```
+management:
+  endpoints:
+    web:
+      exposure:
+      # 展示所有可访问url
+        include: "*"
+      # 所有url以/开始 （去掉application）
+      base-path: /
+```
+这样就可以进入看到loading等待了。当访问时页面上会展示出服务的熔断情况。
+
+# 链路追踪 Spring Cloud Sleuth
+引入依赖：
+```
+  <!--联络追踪依赖-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-sleuth</artifactId>
+        </dependency>
+```
+
+```
+product:
+INFO [product,f7bdceab5c12c9c1,51ee183bda33f82d,false] 
+
+order:
+INFO [order,f7bdceab5c12c9c1,51ee183bda33f82d,false] false表示不发送给外部展示
+INFO [order,f7bdceab5c12c9c1,51ee183bda33f82d,false]
+INFO [order,f7bdceab5c12c9c1,51ee183bda33f82d,false]
+INFO [order,f7bdceab5c12c9c1,51ee183bda33f82d,false]
+INFO [order,f7bdceab5c12c9c1,51ee183bda33f82d,false]
+DEBUG [order,f7bdceab5c12c9c1,f7bdceab5c12c9c1,false]
+```
+
+## 可视化联络追踪zipkin
+引入依赖：
+```
+<!--联络追踪依赖-->
+        <!--<dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-sleuth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-sleuth-zipkin</artifactId>
+        </dependency>-->
+
+        <!--包含 sleuth zipkin-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-zipkin</artifactId>
+        </dependency>
+```
+
+安装zipkin客户端：
+```
+docker run -d -p 9411:9411 openzipkin/zipkin
+```
+
+设置配置：
+```
+spring:
+  zipkin:
+  # 发送到的zipkin的地址
+    base-url: http://localhost:9411/
+  sleuth:
+    sampler:
+    #抽样的百分比（默认为0.1）在线上时一般不会讲所有的链路都发送到zipkin这样对于流量效率是极大的损害
+    #开发调试过程中设置为1 ，可以方便调试。
+      probability: 1
+```
+
