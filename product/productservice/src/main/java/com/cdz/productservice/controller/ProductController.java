@@ -96,7 +96,7 @@ public class ProductController {
         }).filter(Objects::nonNull)
           .collect(Collectors.toList());
 
-//        Thread.sleep(600);
+//        Thread.sleep(2000);
         return ResultUtil.success(productVos);
     }
 }

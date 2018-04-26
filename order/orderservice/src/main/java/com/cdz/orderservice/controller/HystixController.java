@@ -22,9 +22,15 @@ public class HystixController {
      */
 
     @GetMapping("/getProductInfoList")
+//    @HystrixCommand(commandProperties = {
+//            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds",value = "3000")//设置接口过期时间
+////            @HystrixProperty(name = "",value = "")
+//    })
     @HystrixCommand(commandProperties = {
-            @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold",value = "2000"),//设置接口过期时间
-//            @HystrixProperty(name = "",value = "")
+            @HystrixProperty(name = "circuitBreaker.enabled",value = "true"),
+            @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold",value = "10"),
+            @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds",value = "10000"),//休眠时间窗口单位 毫秒
+            @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage",value = "60")//断路器打开的错误百分比条件
     })
     public String getProductInfoList(){
         RestTemplate restTemplate = new RestTemplate();

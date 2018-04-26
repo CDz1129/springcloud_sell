@@ -18,6 +18,7 @@ spring:
       profile: dev
   application:
     name: order
+
 hystrix:
   command:
     default:
@@ -26,3 +27,6 @@ hystrix:
           thread:
             timeoutInMilliseconds: 2000
 
+feingn:
+  hystrix:
+    enabled: true

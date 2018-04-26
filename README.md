@@ -225,6 +225,7 @@ public class TokenFilter extends ZuulFilter {
     - fallbackMethod(回退函数)中具体实现降级逻辑
 - 服务熔断
 - 依赖隔离
+    - hystrix会为每一个 @HystrixCommand 注解创建一个线程池，此服务会与其他服务实现线程隔离，就算此服务延迟过高情况下，不会影响到其他服务的调用。依赖隔离与服务降级是一体化实现的。
 - 监控(hystrix dashboard)
 
 ## 使用
@@ -250,7 +251,7 @@ public @interface SpringCloudApplication {
 }
 ```
 
-### 接口熔断
+### 服务熔断
 
 在调用接口方法上加入`@HystrixCommand`其参数很多,如果想实现降级加入参数`fallbackMethod = "fallback"`
 ```java
@@ -277,7 +278,7 @@ public @interface SpringCloudApplication {
 
 从开始实验中发现其实是因为,restTemplate调用请求时,抛出了异常才使得其进入`fallback`降级方法.
 
-故测试,是否方法中,直接抛出异常是否会返回`太拥挤了,请稍后再试.....`,事实是可以的,说明其实hytrix不只可以降级服务.同样也可以降级自己的服务
+故测试,是否方法中,直接抛出异常是否会返回`太拥挤了,请稍后再试.....`,事实是可以的,**说明其实hytrix不只可以降级服务.同样也可以降级自己的服务**
 
 若想要将一个类中所有的服务,统一处理降级逻辑在类上
 全部参数解释:
@@ -331,3 +332,36 @@ public @interface SpringCloudApplication {
     - circuitBreakerErrorThresholdPercentage -> circuitBreaker.errorThresholdPercentage
         - 断路器打开条件,是百分数.如设置为60,circuitBreakerRequestVolumeThreshold设置为10,那么就是当在滚动窗口中发生10次调用,10次中有7次发生异常,70%>60%就开启熔断
 
+事例：
+
+注解配置：
+```java
+//设置超时时间
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds",value = "3000")//设置接口过期时间
+//            @HystrixProperty(name = "",value = "")
+    })
+```
+
+yml文件配置：
+```yaml
+hystrix:
+  command:
+  #注意这里是用的default，意思是全局配置。
+  #在注解参数中发现有commandKey参数，此默认为方法名，也可以自定义，故可将default换成commandKey值，就可以细化控制具体服务
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 2000
+```
+
+```java
+//设置断路器参数
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "circuitBreaker.enabled",value = "true"),
+            @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold",value = "10"),
+            @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds",value = "10000"),//休眠时间窗口单位 毫秒
+            @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage",value = "60")//断路器打开的错误百分比条件
+    })
+```
